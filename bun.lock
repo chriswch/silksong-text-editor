@@ -2,7 +2,7 @@
   "lockfileVersion": 1,
   "workspaces": {
     "": {
-      "name": "next-hero-starter",
+      "name": "silksong-subtitle-editor",
       "dependencies": {
         "@heroui/react": "^2.8.2",
         "framer-motion": "^12.23.12",
