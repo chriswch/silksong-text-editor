@@ -1,49 +1,31 @@
 import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
 import { Icon } from "@iconify/react";
+import { open } from "@tauri-apps/plugin-dialog";
 import { useRef, useState } from "react";
 
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
-import { mockParseDialogueFile } from "@/utils/mock-parser";
+import { parseUnityAssetsFilet } from "@/utils/tauri-bridge";
 
 export const FileUpload = () => {
   const { setDialogueData } = useDialogueStore();
-  const [isDragging, setIsDragging] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
-
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    const file = e.dataTransfer.files[0];
-    if (file) {
-      processFile(file);
-    }
-  };
-
-  const handleUploadFile = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      processFile(file);
-    }
-  };
-
-  const processFile = async (file: File) => {
+  const handleReadingAssets = async () => {
     setIsLoading(true);
     setError(null);
 
     try {
-      const parsedData = await mockParseDialogueFile(file);
+      const path = await open({
+        multiple: false,
+        directory: false,
+        filters: [{ name: "Unity Assets", extensions: ["assets"] }],
+      });
+      if (!path) return;
+
+      const parsedData = await parseUnityAssetsFilet(path);
       setDialogueData(parsedData);
     } catch (err) {
       setError(
@@ -58,12 +40,7 @@ export const FileUpload = () => {
   return (
     <div className="max-w-3xl mx-auto">
       <Card
-        className={`p-12 border-2 border-dashed ${
-          isDragging ? "border-primary bg-primary-50" : "border-default-200"
-        } transition-colors duration-200`}
-        onDragOver={handleDragOver}
-        onDragLeave={handleDragLeave}
-        onDrop={handleDrop}
+        className="p-12 border-2 border-dashed border-default-200 transition-colors duration-200"
       >
         <div className="flex flex-col items-center justify-center text-center gap-4">
           <div className="p-4 rounded-full bg-primary-50">
@@ -75,8 +52,7 @@ export const FileUpload = () => {
           <div>
             <h2 className="text-xl font-semibold mb-2">Upload Dialogue File</h2>
             <p className="text-default-500 mb-4">
-              Drag and drop your Unity resources.assets file here, or click to
-              browse
+              Click to browse and upload your Unity resources.assets file here
             </p>
             <label>
               <Button
@@ -92,7 +68,7 @@ export const FileUpload = () => {
                 type="file"
                 accept=".assets"
                 className="hidden"
-                onChange={handleUploadFile}
+                onChange={handleReadingAssets}
               />
             </label>
           </div>
