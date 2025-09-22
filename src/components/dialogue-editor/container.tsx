@@ -49,7 +49,7 @@ export default function Container() {
 
       <DialogueTable scene={selectedScene} />
 
-      <Button variant="solid" color="primary" onPress={saveDialogue}>
+      <Button variant="ghost" color="primary" onPress={saveDialogue}>
         Save
       </Button>
     </div>
