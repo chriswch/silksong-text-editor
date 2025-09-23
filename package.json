@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@heroui/react": "^2.8.2",
+    "@tauri-apps/plugin-dialog": "~2",
     "framer-motion": "^12.23.12",
     "next": "15.5.2",
     "react": "19.1.0",
