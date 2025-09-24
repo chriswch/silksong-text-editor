@@ -9,6 +9,7 @@ from typing import cast
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from UnityPy.classes import TextAsset
+from html import unescape
 
 try:
     import UnityPy
@@ -61,7 +62,8 @@ def apply_scene_updates_to_root(
             existing_by_name[name] = entry
 
     for name, content in scene_updates.items():
-        new_text = content.get("editedContent") or content.get("originalContent")
+        raw_text = content.get("editedContent") or content.get("originalContent") or ""
+        new_text = unescape(raw_text)
         if name in existing_by_name:
             existing_by_name[name].text = new_text
 
