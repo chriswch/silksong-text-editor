@@ -3,7 +3,10 @@ use std::path::PathBuf;
 pub fn run() {
     tauri::Builder::default()
         .plugin(tauri_plugin_dialog::init())
-        .invoke_handler(tauri::generate_handler![parse_assets_file])
+        .invoke_handler(tauri::generate_handler![
+            parse_assets_file,
+            export_assets_file
+        ])
         .setup(|app| {
             if cfg!(debug_assertions) {
                 app.handle().plugin(
@@ -98,4 +101,60 @@ async fn parse_assets_file(
     let json: serde_json::Value = serde_json::from_str(&stdout)
         .map_err(|e| format!("Failed to parse JSON from Python: {}. Raw: {}", e, stdout))?;
     Ok(json)
+}
+
+#[tauri::command]
+async fn export_assets_file(
+    app: tauri::AppHandle,
+    file_path: String,
+    dialogue_data: serde_json::Value,
+) -> Result<(), String> {
+    use std::io::Write;
+    use std::process::{Command, Stdio};
+    use tauri::Manager;
+
+    let script_path = match app.path().resolve(
+        "../src-python/scripts/write_assets_file.py",
+        tauri::path::BaseDirectory::Resource,
+    ) {
+        Ok(p) => p,
+        Err(_) => {
+            return Err("write_assets_file.py not found".into());
+        }
+    };
+
+    let python_bin = get_python_path();
+    let mut child = match Command::new(python_bin)
+        .arg(&script_path)
+        .arg(&file_path)
+        .stdin(Stdio::piped())
+        .stdout(Stdio::piped())
+        .stderr(Stdio::piped())
+        .spawn()
+    {
+        Ok(c) => c,
+        Err(e) => return Err(format!("Failed to start Python: {}", e)),
+    };
+
+    if let Some(stdin) = child.stdin.as_mut() {
+        let payload = dialogue_data.to_string();
+        if let Err(e) = stdin.write_all(payload.as_bytes()) {
+            return Err(format!("Failed to write JSON to Python stdin: {}", e));
+        }
+    } else {
+        return Err("Failed to open stdin for Python process".into());
+    }
+
+    let output = match child.wait_with_output() {
+        Ok(o) => o,
+        Err(e) => return Err(format!("Failed to wait for Python: {}", e)),
+    };
+
+    if !output.status.success() {
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        return Err(format!("Python script error: {}", stderr));
+    }
+
+    // Optionally parse stdout to confirm, but we don't need to return data
+    Ok(())
 }
