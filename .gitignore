@@ -42,3 +42,7 @@ next-env.d.ts
 
 # vscode
 .vscode/settings.json
+
+# local files
+.local/
+.cursor/
