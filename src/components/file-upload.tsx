@@ -5,7 +5,7 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
-import { parseUnityAssetsFilet } from "@/utils/tauri-bridge";
+import { parseUnityAssetsFile } from "@/utils/tauri-bridge";
 
 export const FileUpload = () => {
   const { setDialogueData } = useDialogueStore();
@@ -24,7 +24,7 @@ export const FileUpload = () => {
       });
       if (!path) return;
 
-      const parsedData = await parseUnityAssetsFilet(path);
+      const parsedData = await parseUnityAssetsFile(path);
       setDialogueData(parsedData);
     } catch (err) {
       setError(
