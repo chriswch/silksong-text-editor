@@ -134,6 +134,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                 color="primary"
                 onPress={handleExport}
                 isLoading={isExporting}
+                isDisabled={!targetPath}
                 startContent={!isExporting && <Icon icon="lucide:download" />}
               >
                 {isExporting ? "Exporting..." : "Confirm"}
