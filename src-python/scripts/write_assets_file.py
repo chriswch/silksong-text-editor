@@ -83,14 +83,7 @@ def write_assets(asset_path: Path, dialogue_data: DialogueData):
 
         # Build/modify XML root from current decrypted script
         xml_string = decrypt_string(data.m_Script)
-        root: ET.Element
-        if xml_string:
-            try:
-                root = ET.fromstring(xml_string)
-            except Exception:
-                root = ET.Element("root")
-        else:
-            root = ET.Element("root")
+        root = ET.fromstring(xml_string)
 
         apply_scene_updates_to_root(root, dialogue_data[scene_name])
 
