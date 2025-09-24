@@ -2,7 +2,7 @@ import { Button } from "@heroui/button";
 import { Card } from "@heroui/card";
 import { Icon } from "@iconify/react";
 import { open } from "@tauri-apps/plugin-dialog";
-import { useRef, useState } from "react";
+import { useState } from "react";
 
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
 import { parseUnityAssetsFilet } from "@/utils/tauri-bridge";
@@ -11,7 +11,6 @@ export const FileUpload = () => {
   const { setDialogueData } = useDialogueStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const handleReadingAssets = async () => {
     setIsLoading(true);
@@ -39,9 +38,7 @@ export const FileUpload = () => {
 
   return (
     <div className="max-w-3xl mx-auto">
-      <Card
-        className="p-12 border-2 border-dashed border-default-200 transition-colors duration-200"
-      >
+      <Card className="p-12 border-2 border-dashed border-default-200 transition-colors duration-200">
         <div className="flex flex-col items-center justify-center text-center gap-4">
           <div className="p-4 rounded-full bg-primary-50">
             <Icon
@@ -59,17 +56,10 @@ export const FileUpload = () => {
                 color="primary"
                 startContent={!isLoading && <Icon icon="lucide:file-text" />}
                 isLoading={isLoading}
-                onPress={() => fileInputRef.current?.click()}
+                onPress={handleReadingAssets}
               >
                 {isLoading ? "Processing..." : "Select File"}
               </Button>
-              <input
-                ref={fileInputRef}
-                type="file"
-                accept=".assets"
-                className="hidden"
-                onChange={handleReadingAssets}
-              />
             </label>
           </div>
           {error && (
