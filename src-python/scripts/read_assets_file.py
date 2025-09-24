@@ -93,7 +93,7 @@ def decrypt_string(encrypted_string: str) -> str:
         return decrypted_bytes.decode("utf-8")
 
     except Exception as e:
-        print(f"An error occurred during decryption: {e}")
+        print(json.dumps({"error": f"An error occurred during decryption: {e}"}))
         return ""
 
 
