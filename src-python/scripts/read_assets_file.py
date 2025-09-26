@@ -1,66 +1,30 @@
+import base64
 import json
 import sys
+import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import cast
+
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
-import base64
-import xml.etree.ElementTree as ET
-
 from UnityPy.classes import TextAsset
 
 try:
     import UnityPy
 except Exception as e:
-    print(json.dumps({"error": f"Failed to import UnityPy: {e}"}))
+    print(json.dumps({"error": f"Failed to import UnityPy: {e}"}), file=sys.stderr)
     sys.exit(1)
 
 TEXT_ASSET_TYPE = "TextAsset"
-# Editable TextAsset names from resources.assets
-TEXT_TARGET_ASSETS = [
-    "ZH_Achievements",
-    "ZH_AutoSaveNames",
-    "ZH_Belltown",
-    "ZH_Bonebottom",
-    "ZH_Caravan",
-    "ZH_City",
-    "ZH_Coral",
-    "ZH_Crawl",
-    "ZH_Credits List",
-    "ZH_Deprecated",
-    "ZH_Dust",
-    "ZH_Enclave",
-    "ZH_Error",
-    "ZH_Fast Travel",
-    "ZH_Forge",
-    "ZH_General",
-    "ZH_Greymoor",
-    "ZH_Inspect",
-    "ZH_Journal",
-    "ZH_Lore",
-    "ZH_MainMenu",
-    "ZH_Map Zones",
-    "ZH_Peak",
-    "ZH_Pilgrims",
-    "ZH_Prompts",
-    "ZH_Quests",
-    "ZH_Shellwood",
-    "ZH_Shop",
-    "ZH_Song",
-    "ZH_Titles",
-    "ZH_Tools",
-    "ZH_UI",
-    "ZH_Under",
-    "ZH_Wanderers",
-    "ZH_Weave",
-    "ZH_Wilds",
-]
+# TODO: Make this configurable via UI
+# Language prefix
+LANGUAGE = "EN"
 
 
 # Key must be in bytes, identical to the C# implementation
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
 
-type DialogueData = dict[str, dict[str, dict[str, str]]]
+DialogueData = dict[str, dict[str, dict[str, str]]]
 
 
 def decrypt_string(encrypted_string: str) -> str:
@@ -93,7 +57,10 @@ def decrypt_string(encrypted_string: str) -> str:
         return decrypted_bytes.decode("utf-8")
 
     except Exception as e:
-        print(json.dumps({"error": f"An error occurred during decryption: {e}"}))
+        print(
+            json.dumps({"error": f"An error occurred during decryption: {e}"}),
+            file=sys.stderr,
+        )
         return ""
 
 
@@ -109,7 +76,7 @@ def parse_asset(asset_path: Path) -> DialogueData:
         if obj.type.name == TEXT_ASSET_TYPE:
             data: TextAsset = cast(TextAsset, obj.read())
 
-            if data.m_Name not in TEXT_TARGET_ASSETS:
+            if not data.m_Name.startswith(f"{LANGUAGE}_"):
                 continue
 
             xml_string = decrypt_string(data.m_Script)
@@ -128,12 +95,15 @@ def parse_asset(asset_path: Path) -> DialogueData:
 
 def main() -> int:
     if len(sys.argv) < 2:
-        print(json.dumps({"error": "Usage: parse_unity_asset.py <asset_path>"}))
+        print(
+            json.dumps({"error": "Usage: parse_unity_asset.py <asset_path>"}),
+            file=sys.stderr,
+        )
         return 2
 
     asset_path = Path(sys.argv[1])
     if not asset_path.exists():
-        print(json.dumps({"error": f"Asset not found: {asset_path}"}))
+        print(json.dumps({"error": f"Asset not found: {asset_path}"}), file=sys.stderr)
         return 3
 
     try:
@@ -141,7 +111,7 @@ def main() -> int:
         print(json.dumps(result))
         return 0
     except Exception as e:
-        print(json.dumps({"error": f"Failed to parse asset: {e}"}))
+        print(json.dumps({"error": f"Failed to parse asset: {e}"}), file=sys.stderr)
         return 1
 
 

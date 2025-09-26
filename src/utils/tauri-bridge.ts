@@ -10,3 +10,13 @@ export async function parseUnityAssetsFile(
   });
   return result;
 }
+
+export async function exportUnityAssetsFile(
+  filePath: string,
+  dialogueData: DialogueData,
+): Promise<void> {
+  await invoke("export_assets_file", {
+    filePath,
+    dialogueData,
+  });
+}

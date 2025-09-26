@@ -8,7 +8,10 @@ import {
 } from "@heroui/modal";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { Icon } from "@iconify/react";
+import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
+
+import { exportUnityAssetsFile } from "@/utils/tauri-bridge";
 
 import { useDialogueStore } from "../hooks/use-dialogue-store";
 
@@ -21,28 +24,45 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
   const { dialogueData } = useDialogueStore();
   const [exportOption, setExportOption] = useState("new");
   const [isExporting, setIsExporting] = useState(false);
+  const [targetPath, setTargetPath] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const handleExport = () => {
+  const handleChooseFile = async () => {
+    setError(null);
+    const selected = await open({
+      multiple: false,
+      directory: false,
+      filters: [
+        {
+          name: "Unity resources.assets",
+          extensions: ["assets"],
+        },
+      ],
+    });
+    if (!selected) return;
+    if (Array.isArray(selected)) {
+      setTargetPath(selected[0] ?? null);
+    } else {
+      setTargetPath(selected);
+    }
+  };
+
+  const handleExport = async () => {
+    setError(null);
+    if (!targetPath) {
+      setError("Please select a resources.assets file first.");
+      return;
+    }
     setIsExporting(true);
-
-    // Simulate export process
-    setTimeout(() => {
-      // In a real app, this would process the dialogueData and create a Unity asset file
-      // For this demo, we'll just export the JSON data
-      const exportData = JSON.stringify(dialogueData, null, 2);
-      const blob = new Blob([exportData], { type: "application/json" });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement("a");
-      a.href = url;
-      a.download = "resources_edited.assets";
-      document.body.appendChild(a);
-      a.click();
-      document.body.removeChild(a);
-      URL.revokeObjectURL(url);
-
-      setIsExporting(false);
+    try {
+      await exportUnityAssetsFile(targetPath, dialogueData);
       onClose();
-    }, 1500);
+    } catch (e) {
+      console.error(e);
+      setError("Failed to export. See console for details.");
+    } finally {
+      setIsExporting(false);
+    }
   };
 
   return (
@@ -70,16 +90,37 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                 </Radio>
               </RadioGroup>
 
+              <div className="mt-4 flex flex-col gap-2">
+                <div className="flex items-center gap-3">
+                  <Button
+                    variant="flat"
+                    onPress={handleChooseFile}
+                    startContent={<Icon icon="lucide:file" />}
+                  >
+                    Choose resources.assets
+                  </Button>
+                  {targetPath && (
+                    <span
+                      className="text-small text-default-600 truncate"
+                      title={targetPath}
+                    >
+                      {targetPath}
+                    </span>
+                  )}
+                </div>
+                {error && (
+                  <span className="text-tiny text-danger-600">{error}</span>
+                )}
+              </div>
+
               <div className="mt-6 p-3 bg-warning-50 rounded-medium flex items-start gap-2">
                 <Icon
                   icon="lucide:alert-triangle"
                   className="text-warning mt-0.5"
                 />
                 <div className="text-small text-warning-700">
-                  <strong>Note:</strong> This is a demo application. In a real
-                  implementation, this would export a properly formatted Unity
-                  assets file. For now, it will export your dialogue data as
-                  JSON.
+                  <strong>Note:</strong> This will write your edits into the
+                  selected <code>resources.assets</code> file.
                 </div>
               </div>
             </ModalBody>
@@ -91,9 +132,10 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                 color="primary"
                 onPress={handleExport}
                 isLoading={isExporting}
+                isDisabled={!targetPath}
                 startContent={!isExporting && <Icon icon="lucide:download" />}
               >
-                {isExporting ? "Exporting..." : "Export"}
+                {isExporting ? "Exporting..." : "Confirm"}
               </Button>
             </ModalFooter>
           </>
