@@ -92,7 +92,6 @@ async fn parse_assets_file(
     };
 
     if !output.status.success() {
-        // Can's get error message currently, don't know why
         let stderr = String::from_utf8_lossy(&output.stderr).to_string();
         return Err(format!("Python script error: {}", stderr));
     }
