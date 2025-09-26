@@ -1,6 +1,7 @@
 import base64
 import json
 import os
+import shutil
 import sys
 import xml.etree.ElementTree as ET
 from pathlib import Path
@@ -18,8 +19,13 @@ except Exception as e:
     sys.exit(1)
 
 
+TARGET_ASSETS_FILE_NAME = "resources.assets"
 TEXT_ASSET_TYPE = "TextAsset"
 
+CURRENT_SCRIPT_PATH = os.getcwd()
+TEMP_WORKSPACE_FOLDER = Path(f"{CURRENT_SCRIPT_PATH}/temp_workspace")
+if not TEMP_WORKSPACE_FOLDER.exists():
+    TEMP_WORKSPACE_FOLDER.mkdir(parents=True, exist_ok=True)
 
 # Must match the reader script
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
@@ -95,9 +101,14 @@ def write_assets(asset_path: Path, dialogue_data: DialogueData):
     if not changed:
         return {"result": "no_changes"}
 
-    # Save back to the same directory, overwriting the file
-    out_dir = os.path.dirname(str(asset_path))
-    env.save(pack="none", out_path=out_dir)
+    # DON'T OVERWRITE THE ORIGINAL FILE DIRECTLY
+    # SAVE TO A TEMPORARY FILE AND THEN MOVE IT
+    # OTHERWISE, IT WILL CAUSE AN ERROR.
+    with open(f"{TEMP_WORKSPACE_FOLDER}/{TARGET_ASSETS_FILE_NAME}", "wb") as f:
+        _ = f.write(env.file.save())
+    _ = shutil.move(f"{TEMP_WORKSPACE_FOLDER}/{TARGET_ASSETS_FILE_NAME}", asset_path)
+    _ = shutil.rmtree(TEMP_WORKSPACE_FOLDER)
+
     return {"result": "ok"}
 
 
