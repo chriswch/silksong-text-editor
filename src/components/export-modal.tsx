@@ -119,10 +119,8 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                   className="text-warning mt-0.5"
                 />
                 <div className="text-small text-warning-700">
-                  <strong>Note:</strong> This is a demo application. In a real
-                  implementation, this would export a properly formatted Unity
-                  assets file. For now, it will export your dialogue data as
-                  JSON.
+                  <strong>Note:</strong> This will write your edits into the
+                  selected <code>resources.assets</code> file.
                 </div>
               </div>
             </ModalBody>
