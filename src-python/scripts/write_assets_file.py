@@ -1,38 +1,32 @@
 import base64
 import json
-import os
 import shutil
 import sys
+import tempfile
 import xml.etree.ElementTree as ET
+from html import unescape
 from pathlib import Path
 from typing import cast
 
 from Crypto.Cipher import AES
 from Crypto.Util.Padding import pad, unpad
 from UnityPy.classes import TextAsset
-from html import unescape
 
 try:
     import UnityPy
 except Exception as e:
-    print(json.dumps({"error": f"Failed to import UnityPy: {e}"}))
+    print(json.dumps({"error": f"Failed to import UnityPy: {e}"}), file=sys.stderr)
     sys.exit(1)
 
 
 TARGET_ASSETS_FILE_NAME = "resources.assets"
 TEXT_ASSET_TYPE = "TextAsset"
 
-CURRENT_SCRIPT_PATH = os.getcwd()
-TEMP_WORKSPACE_FOLDER = Path(f"{CURRENT_SCRIPT_PATH}/temp_workspace")
-if not TEMP_WORKSPACE_FOLDER.exists():
-    TEMP_WORKSPACE_FOLDER.mkdir(parents=True, exist_ok=True)
-
 # Must match the reader script
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
 
-
-type DialogueEntry = dict[str, dict[str, str]]
-type DialogueData = dict[str, DialogueEntry]
+DialogueEntry = dict[str, dict[str, str]]
+DialogueData = dict[str, DialogueEntry]
 
 
 def decrypt_string(encrypted_string: str) -> str:
@@ -104,22 +98,37 @@ def write_assets(asset_path: Path, dialogue_data: DialogueData):
     # DON'T OVERWRITE THE ORIGINAL FILE DIRECTLY
     # SAVE TO A TEMPORARY FILE AND THEN MOVE IT
     # OTHERWISE, IT WILL CAUSE AN ERROR.
-    with open(f"{TEMP_WORKSPACE_FOLDER}/{TARGET_ASSETS_FILE_NAME}", "wb") as f:
-        _ = f.write(env.file.save())
-    _ = shutil.move(f"{TEMP_WORKSPACE_FOLDER}/{TARGET_ASSETS_FILE_NAME}", asset_path)
-    _ = shutil.rmtree(TEMP_WORKSPACE_FOLDER)
+    temp_dir = tempfile.mkdtemp(prefix="sse_export_")
+    temp_asset_path = Path(temp_dir) / TARGET_ASSETS_FILE_NAME
+    try:
+        with open(temp_asset_path, "wb") as f:
+            # UnityPy exposes file.save() at runtime; guard at runtime for safety
+            file_obj = env.file
+            save_fn = getattr(file_obj, "save", None)
+            if not callable(save_fn):
+                raise RuntimeError("UnityPy env.file.save() is unavailable")
+
+            data_bytes: bytes = cast(bytes, save_fn())  # returns bytes
+            _ = f.write(data_bytes)
+
+        _ = shutil.move(str(temp_asset_path), asset_path)
+    finally:
+        shutil.rmtree(temp_dir, ignore_errors=True)
 
     return {"result": "ok"}
 
 
 def main() -> int:
     if len(sys.argv) < 2:
-        print(json.dumps({"error": "Usage: write_assets_file.py <asset_path>"}))
+        print(
+            json.dumps({"error": "Usage: write_assets_file.py <asset_path>"}),
+            file=sys.stderr,
+        )
         return 2
 
     asset_path = Path(sys.argv[1])
     if not asset_path.exists():
-        print(json.dumps({"error": f"Asset not found: {asset_path}"}))
+        print(json.dumps({"error": f"Asset not found: {asset_path}"}), file=sys.stderr)
         return 3
 
     dialogue_data: DialogueData
@@ -127,7 +136,7 @@ def main() -> int:
         raw = sys.stdin.read()
         dialogue_data = json.loads(raw) if raw else {}
     except Exception as e:
-        print(json.dumps({"error": f"Invalid JSON on stdin: {e}"}))
+        print(json.dumps({"error": f"Invalid JSON on stdin: {e}"}), file=sys.stderr)
         return 4
 
     try:
@@ -135,7 +144,7 @@ def main() -> int:
         print(json.dumps(result))
         return 0
     except Exception as e:
-        print(json.dumps({"error": f"Failed to write asset: {e}"}))
+        print(json.dumps({"error": f"Failed to write asset: {e}"}), file=sys.stderr)
         return 1
 
 
