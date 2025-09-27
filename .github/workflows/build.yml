@@ -70,6 +70,7 @@ jobs:
 
       # 6. Install Python deps into runtime
       - name: Install Python deps
+        shell: bash
         run: |
           if [[ "${{ matrix.os }}" == "ubuntu-latest" ]]; then
             uv pip install --python python-runtime/linux-x64/bin/python3 --target python-runtime/linux-x64/lib/python3.12/site-packages ./src-python
@@ -81,6 +82,7 @@ jobs:
 
       # 7. Build Tauri app
       - name: Build Tauri app
+        shell: bash
         run: |
           bun install
           bun run tauri build
