@@ -58,7 +58,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
       await exportUnityAssetsFile(targetPath, dialogueData);
       onClose();
     } catch (e) {
-      setError("Failed to export. See console for details.");
+      setError(`Failed to export. ${e}`);
     } finally {
       setIsExporting(false);
     }
