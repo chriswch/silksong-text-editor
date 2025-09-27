@@ -76,7 +76,7 @@ jobs:
             uv pip install --python python-runtime/linux-x64/bin/python3 --target python-runtime/linux-x64/lib/python3.12/site-packages ./src-python
           elif [[ "${{ matrix.os }}" == "macos-latest" ]]; then
             uv pip install --python python-runtime/macos-x64/bin/python3 --target python-runtime/macos-x64/lib/python3.12/site-packages ./src-python
-          else
+          elif [[ "${{ matrix.os }}" == "windows-latest" ]]; then
             uv pip install --python python-runtime/windows-x64/python.exe --target python-runtime/windows-x64/Lib/site-packages ./src-python
           fi
 
