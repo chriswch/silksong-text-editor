@@ -27,9 +27,7 @@ export const FileUpload = () => {
       const parsedData = await parseUnityAssetsFile(path);
       setDialogueData(parsedData);
     } catch (err) {
-      setError(
-        "Failed to parse file. Please ensure it's a valid Unity resources.assets file.",
-      );
+      setError(`Failed to read the file. ${err}`);
       console.error(err);
     } finally {
       setIsLoading(false);
