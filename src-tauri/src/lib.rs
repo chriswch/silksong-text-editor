@@ -133,8 +133,8 @@ async fn export_assets_file(
     };
 
     if !output.status.success() {
-        let stdout = String::from_utf8_lossy(&output.stdout).to_string();
-        return Err(format!("Python script error: {}", stdout));
+        let stderr = String::from_utf8_lossy(&output.stderr).to_string();
+        return Err(format!("Python script error: {}", stderr));
     }
 
     // Optionally parse stdout to confirm, but we don't need to return data
