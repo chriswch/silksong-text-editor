@@ -27,6 +27,7 @@
     "active": true,
     "targets": "all",
     "resources": [
+      "../python-runtime/${PYTHON_PLATFORM}",
       "../src-python/scripts/read_assets_file.py",
       "../src-python/scripts/write_assets_file.py"
     ],
