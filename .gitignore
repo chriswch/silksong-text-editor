@@ -19,6 +19,7 @@
 
 # production
 /build
+/python-runtime
 
 # misc
 .DS_Store

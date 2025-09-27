@@ -1,3 +1,4 @@
+use std::env;
 use std::path::PathBuf;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
@@ -23,44 +24,26 @@ pub fn run() {
 
 /// Determine python path as per dev vs prod
 fn get_python_path() -> PathBuf {
-    if cfg!(debug_assertions) {
-        // dev: project .venv or fallback to system python
-        let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        let mut p = PathBuf::from(manifest_dir);
-        p.pop(); // go up to project root if necessary
-        p.push("src-python");
-        p.push(".venv");
-        if cfg!(target_os = "windows") {
-            p.push("Scripts");
-            p.push("python.exe");
-        } else {
-            p.push("bin");
-            p.push("python");
-        }
-        if p.exists() {
-            return p;
-        }
-        // fallback to system python
-        if cfg!(target_os = "windows") {
-            PathBuf::from("python.exe")
-        } else {
-            PathBuf::from("python3")
-        }
-    } else {
-        // prod: packaged runtime under resources/python
-        // let mut r = resource_dir().expect("resource dir not found");
-        let manifest_dir = env!("CARGO_MANIFEST_DIR");
-        let mut r: PathBuf = PathBuf::from(manifest_dir);
-
-        r.push("python");
-        if cfg!(target_os = "windows") {
-            r.push("python.exe");
-        } else {
-            r.push("bin");
-            r.push("python");
-        }
-        r
+    // 1. Prefer runtime override if user sets env when running the app
+    if let Ok(path) = env::var("PYTHON_RUNTIME_PATH") {
+        return PathBuf::from(path);
     }
+
+    // 2. Fall back to baked-in value from build.rs (only exists in CI builds)
+    if let Some(baked) = option_env!("PYTHON_RUNTIME_PATH") {
+        return PathBuf::from(baked);
+    }
+
+    // 3. Dev fallback: local venv
+    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
+    path.pop(); // go up to project root if necessary
+    path.push("src-python/.venv");
+    if cfg!(target_os = "windows") {
+        path.push("Scripts/python.exe");
+    } else {
+        path.push("bin/python");
+    }
+    path
 }
 
 #[tauri::command]
