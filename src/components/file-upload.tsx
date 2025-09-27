@@ -28,7 +28,6 @@ export const FileUpload = () => {
       setDialogueData(parsedData);
     } catch (err) {
       setError(`Failed to read the file. ${err}`);
-      console.error(err);
     } finally {
       setIsLoading(false);
     }
