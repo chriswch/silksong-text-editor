@@ -9,7 +9,8 @@ jobs:
   build:
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
+        # os: [ubuntu-latest, macos-latest, windows-latest]
+        os: [windows-latest] # For now, only build on Windows
     runs-on: ${{ matrix.os }}
 
     steps:
