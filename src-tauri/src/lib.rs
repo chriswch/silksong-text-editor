@@ -28,14 +28,11 @@ fn get_python_path() -> PathBuf {
         let manifest_dir = env!("CARGO_MANIFEST_DIR");
         let mut p = PathBuf::from(manifest_dir);
         p.pop(); // go up to project root if necessary
-        p.push("src-python");
-        p.push(".venv");
+        p.push("src-python/.venv");
         if cfg!(target_os = "windows") {
-            p.push("Scripts");
-            p.push("python.exe");
+            p.push("Scripts/python.exe");
         } else {
-            p.push("bin");
-            p.push("python");
+            p.push("bin/python");
         }
         if p.exists() {
             return p;
@@ -56,8 +53,7 @@ fn get_python_path() -> PathBuf {
         if cfg!(target_os = "windows") {
             r.push("python.exe");
         } else {
-            r.push("bin");
-            r.push("python");
+            r.push("bin/python");
         }
         r
     }
