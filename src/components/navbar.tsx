@@ -6,12 +6,15 @@ import { Icon } from "@iconify/react";
 import { ExportModal } from "@/components/export-modal";
 import { LanguageSelector } from "@/components/language-selector";
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
+import { useLanguageStore } from "@/hooks/use-language";
 
 const Logo = () => (
   <Icon icon="lucide:message-square-text" className="text-primary text-2xl" />
 );
 
 export default function TopNavbar() {
+  const { t } = useLanguageStore();
+
   const { dialogueData } = useDialogueStore();
   const hasData = Object.keys(dialogueData).length > 0;
   const { isOpen, onOpen, onClose } = useDisclosure();
@@ -22,9 +25,7 @@ export default function TopNavbar() {
         <NavbarBrand>
           <div className="flex items-center gap-3">
             <Logo />
-            <h1 className="text-xl font-semibold">
-              Silksong Dialogue Subtitle Editor
-            </h1>
+            <h1 className="text-xl font-semibold">{t("appTitle")}</h1>
           </div>
         </NavbarBrand>
         <NavbarContent justify="end">
@@ -39,7 +40,7 @@ export default function TopNavbar() {
               isDisabled={!hasData}
               onPress={onOpen}
             >
-              Export
+              {t("export")}
             </Button>
           </NavbarItem>
         </NavbarContent>

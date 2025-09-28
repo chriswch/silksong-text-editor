@@ -9,6 +9,7 @@ import {
 import ReactDiffViewer from "react-diff-viewer-continued";
 
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
+import { useLanguageStore } from "@/hooks/use-language";
 
 import ContentEditor from "./content-editor";
 
@@ -17,6 +18,8 @@ interface DialogueTableProps {
 }
 
 export default function DialogueTable({ scene }: DialogueTableProps) {
+  const { t } = useLanguageStore();
+
   const { dialogueData } = useDialogueStore();
   const dialogueEntry = dialogueData[scene];
 
@@ -24,10 +27,10 @@ export default function DialogueTable({ scene }: DialogueTableProps) {
     <div className="bg-content1 rounded-medium border border-default-200">
       <Table aria-label="Dialogue entries table">
         <TableHeader>
-          <TableColumn width="20%">NAME</TableColumn>
-          <TableColumn width="80%">Content</TableColumn>
+          <TableColumn width="20%">{t("name")}</TableColumn>
+          <TableColumn width="80%">{t("content")}</TableColumn>
         </TableHeader>
-        <TableBody emptyContent="No dialogue entries found. Try adjusting your filters.">
+        <TableBody emptyContent={t("noContentFound")}>
           {Object.entries(dialogueEntry).map(([name, content]) => {
             const isEdited =
               content.editedContent !== undefined &&
