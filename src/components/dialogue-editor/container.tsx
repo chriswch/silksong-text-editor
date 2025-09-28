@@ -38,7 +38,10 @@ export default function Container() {
                   : t("allCategories")}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Category selection">
+            <DropdownMenu
+              aria-label="Category selection"
+              className="max-h-70 overflow-y-auto"
+            >
               {Object.keys(dialogueData).map((scene) => (
                 <DropdownItem
                   key={scene}
