@@ -23,7 +23,9 @@ TEXT_ASSET_TYPE = "TextAsset"
 
 # Must match the reader script
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
-ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]+)</entry>')
+
+# Must accept empty content
+ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]*)</entry>')
 
 DialogueEntry = dict[str, dict[str, str]]
 DialogueData = dict[str, DialogueEntry]

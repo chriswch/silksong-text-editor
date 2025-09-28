@@ -23,7 +23,9 @@ LANGUAGE = "EN"
 
 # Key must be in bytes, identical to the C# implementation
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
-ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]+)</entry>')
+
+# Must accept empty content
+ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]*)</entry>')
 
 DialogueData = dict[str, dict[str, dict[str, str]]]
 
