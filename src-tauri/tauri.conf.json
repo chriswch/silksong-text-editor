@@ -25,12 +25,7 @@
   },
   "bundle": {
     "active": true,
-    "targets": "all",
-    "resources": [
-      "../python-runtime/${PYTHON_PLATFORM}",
-      "../src-python/scripts/read_assets_file.py",
-      "../src-python/scripts/write_assets_file.py"
-    ],
+    "targets": ["appimage", "nsis", "dmg"],
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

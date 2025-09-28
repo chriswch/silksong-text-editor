@@ -2,9 +2,8 @@ import base64
 import json
 import shutil
 import sys
+import re
 import tempfile
-import xml.etree.ElementTree as ET
-from html import unescape
 from pathlib import Path
 from typing import cast
 
@@ -22,8 +21,10 @@ except Exception as e:
 TARGET_ASSETS_FILE_NAME = "resources.assets"
 TEXT_ASSET_TYPE = "TextAsset"
 
-# Must match the reader script
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
+
+# Must accept empty content
+ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]*)</entry>')
 
 DialogueEntry = dict[str, dict[str, str]]
 DialogueData = dict[str, DialogueEntry]
@@ -36,8 +37,17 @@ def decrypt_string(encrypted_string: str) -> str:
         decrypted_bytes_padded = cipher.decrypt(encrypted_bytes)
         decrypted_bytes = unpad(decrypted_bytes_padded, AES.block_size)
         return decrypted_bytes.decode("utf-8")
-    except Exception:
-        return ""
+    except Exception as e:
+        print(
+            json.dumps(
+                {
+                    "error": f"Decryption failed: {e}",
+                    "encrypted_string": encrypted_string,
+                }
+            ),
+            file=sys.stderr,
+        )
+        raise e
 
 
 def encrypt_string(plain_text: str) -> str:
@@ -48,24 +58,20 @@ def encrypt_string(plain_text: str) -> str:
         encrypted = cipher.encrypt(padded)
         return base64.b64encode(encrypted).decode("utf-8")
     except Exception as e:
+        print(
+            json.dumps({"error": f"Encryption failed: {e}", "plain_text": plain_text}),
+            file=sys.stderr,
+        )
         raise RuntimeError(f"Encryption failed: {e}")
 
 
 def apply_scene_updates_to_root(
-    root: ET.Element, scene_updates: dict[str, dict[str, str]]
+    name_to_raw_content: dict[str, str], scene_updates: dict[str, dict[str, str]]
 ):
-    # scene_updates: name -> { originalContent, editedContent? }
-    existing_by_name: dict[str, ET.Element] = {}
-    for entry in root.findall("entry"):
-        name = entry.get("name")
-        if name:
-            existing_by_name[name] = entry
-
     for name, content in scene_updates.items():
         raw_text = content.get("editedContent") or content.get("originalContent") or ""
-        new_text = unescape(raw_text)
-        if name in existing_by_name:
-            existing_by_name[name].text = new_text
+        if name in name_to_raw_content:
+            name_to_raw_content[name] = raw_text
 
 
 def write_assets(asset_path: Path, dialogue_data: DialogueData):
@@ -83,13 +89,23 @@ def write_assets(asset_path: Path, dialogue_data: DialogueData):
 
         # Build/modify XML root from current decrypted script
         xml_string = decrypt_string(data.m_Script)
-        root = ET.fromstring(xml_string)
 
-        apply_scene_updates_to_root(root, dialogue_data[scene_name])
+        raw_entries = ENTRY_PATTERN.findall(xml_string)
+        name_to_raw_content = {name: content for name, content in raw_entries}
+        apply_scene_updates_to_root(name_to_raw_content, dialogue_data[scene_name])
 
-        new_xml = ET.tostring(root, encoding="unicode")
+        new_xml = (
+            "<entries>\n"
+            + "\n".join(
+                f'<entry name="{name}">{content}</entry>'
+                for name, content in name_to_raw_content.items()
+            )
+            + "\n</entries>\n"
+        )
+
         data.m_Script = encrypt_string(new_xml)
         data.save()
+
         changed = True
 
     if not changed:
@@ -133,7 +149,8 @@ def main() -> int:
 
     dialogue_data: DialogueData
     try:
-        raw = sys.stdin.read()
+        raw_bytes = sys.stdin.buffer.read()
+        raw = raw_bytes.decode("utf-8")
         dialogue_data = json.loads(raw) if raw else {}
     except Exception as e:
         print(json.dumps({"error": f"Invalid JSON on stdin: {e}"}), file=sys.stderr)
