@@ -9,11 +9,14 @@ import { Icon } from "@iconify/react";
 import { useState } from "react";
 
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
+import { useLanguageStore } from "@/hooks/use-language";
 
 import DialogueTable from "./dialogue-table";
 
 export default function Container() {
-  const { dialogueData, saveDialogue } = useDialogueStore();
+  const { t } = useLanguageStore();
+
+  const { dialogueData } = useDialogueStore();
   const [selectedScene, setSelectedScene] = useState<string>(
     Object.keys(dialogueData)[0],
   );
@@ -21,7 +24,7 @@ export default function Container() {
   return (
     <div className="flex flex-col gap-6">
       <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-        <h2 className="text-xl font-semibold">Dialogue Editor</h2>
+        <h2 className="text-xl font-semibold">{t("contentEntriesTable")}</h2>
 
         <div className="flex flex-col sm:flex-row gap-3">
           <Dropdown>
@@ -30,10 +33,12 @@ export default function Container() {
                 variant="bordered"
                 endContent={<Icon icon="lucide:chevron-down" />}
               >
-                {selectedScene ? `Scene: ${selectedScene}` : "All Scenes"}
+                {selectedScene
+                  ? `${t("category")}: ${selectedScene}`
+                  : t("allCategories")}
               </Button>
             </DropdownTrigger>
-            <DropdownMenu aria-label="Scene selection">
+            <DropdownMenu aria-label="Category selection">
               {Object.keys(dialogueData).map((scene) => (
                 <DropdownItem
                   key={scene}
@@ -48,10 +53,6 @@ export default function Container() {
       </div>
 
       <DialogueTable scene={selectedScene} />
-
-      <Button variant="ghost" color="primary" onPress={saveDialogue}>
-        Save
-      </Button>
     </div>
   );
 }

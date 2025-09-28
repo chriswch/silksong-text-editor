@@ -11,6 +11,7 @@ import { Icon } from "@iconify/react";
 import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 
+import { useLanguageStore } from "@/hooks/use-language";
 import { exportUnityAssetsFile } from "@/utils/tauri-bridge";
 
 import { useDialogueStore } from "../hooks/use-dialogue-store";
@@ -21,6 +22,8 @@ interface ExportModalProps {
 }
 
 export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
+  const { t } = useLanguageStore();
+
   const { dialogueData } = useDialogueStore();
   const [exportOption, setExportOption] = useState("new");
   const [isExporting, setIsExporting] = useState(false);
@@ -72,20 +75,15 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
             <ModalHeader className="flex flex-col gap-1">
               <div className="flex items-center gap-2">
                 <Icon icon="lucide:download" className="text-primary" />
-                <span>Export Dialogue</span>
+                <span>{t("exportDialogue")}</span>
               </div>
             </ModalHeader>
             <ModalBody>
-              <p className="text-default-500 mb-4">
-                Choose how you want to export your edited dialogue:
-              </p>
+              <p className="text-default-500 mb-4">{t("exportFormat")}</p>
 
               <RadioGroup value={exportOption} onValueChange={setExportOption}>
-                <Radio
-                  value="new"
-                  description="Create a new file with your edits applied"
-                >
-                  Create new file (resources_edited.assets)
+                <Radio value="new" description={t("originalFormatDescription")}>
+                  {t("originalFormat")}
                 </Radio>
               </RadioGroup>
 
@@ -96,7 +94,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                     onPress={handleChooseFile}
                     startContent={<Icon icon="lucide:file" />}
                   >
-                    Choose resources.assets
+                    {t("selectFile")}
                   </Button>
                   {targetPath && (
                     <span
@@ -118,14 +116,13 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                   className="text-warning mt-0.5"
                 />
                 <div className="text-small text-warning-700">
-                  <strong>Note:</strong> This will write your edits into the
-                  selected <code>resources.assets</code> file.
+                  {t("exportFileHint")}
                 </div>
               </div>
             </ModalBody>
             <ModalFooter>
               <Button color="default" variant="light" onPress={onClose}>
-                Cancel
+                {t("cancel")}
               </Button>
               <Button
                 color="primary"
@@ -134,7 +131,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                 isDisabled={!targetPath}
                 startContent={!isExporting && <Icon icon="lucide:download" />}
               >
-                {isExporting ? "Exporting..." : "Confirm"}
+                {isExporting ? t("exporting") : t("confirm")}
               </Button>
             </ModalFooter>
           </>

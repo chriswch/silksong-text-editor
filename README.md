@@ -1,41 +1,83 @@
-# Next.js + HeroUI Starter
+# Silksong 文字編輯器
 
-An opinionated starter template to help me build Next.js apps with HeroUI quickly.
-It comes preconfigured so you can clone, install, and start shipping without spending time on setup.
+讓玩家能以簡單易用的方式，透過 `resources.assets` 檔案，瀏覽與編輯《空洞騎士：絲綢之歌》的遊戲文字內容。
+本專案目前以繁體中文（臺灣，zh‑TW）條目為主要編輯目標。
 
-## Built-in
+---
 
-- Next.js 15
-- HeroUI
-- Tailwind CSS
-- Prettier
-- ESLint
+## 🙏 感謝
 
-## Quick Start
+特別感謝以下專案提供關鍵的靈感與技術基礎：
 
-1. clone or just download the repo and unzip it
+[SKSG_TChinese](https://github.com/tents89/SKSG_TChinese)
 
-2. Install dependencies
+[SilksongDecryptor](https://github.com/rm-NoobInCoding/SilksongDecryptor)
 
-   we use v24.7.0 here
+---
+
+## ✨ 功能特色
+
+- 載入並解析遊戲的 `resources.assets` 檔案
+- 瀏覽所有可用的遊戲文字
+- 直接在應用程式中編輯文字
+- 將修改內容儲存並匯出回遊戲檔案
+
+> 重要：覆寫任何檔案前，請務必先備份原始檔案！
+
+---
+
+## 🛠️ 貢獻指南
+
+### 系統架構
+
+- Next.js (SSG) + HeroUI
+- Tauri 2 (Rust)
+- Python (負責解析／匯出 Unity Assets)
+
+UI 透過 Tauri 指令呼叫 (Rust)，再由 Rust 轉交 Python 處理 Unity Assets 的讀寫，最後回傳結果至 UI。
+
+### 專案結構
+
+- `src/` – Next.js 應用程式 (UI 元件、hooks、i18n)
+- `src-tauri/` – Tauri 設定與 Rust 橋接層
+- `src-python/` – 讀寫 Unity Assets 的 Python 指令碼
+- `python-runtime/` – 部署時用的 Python 執行環境
+
+### 開發環境設定
+
+1. 先決條件
 
    ```bash
+   # 以 nvm 安裝 Node (本專案使用 Node v24.7.0)
    nvm use
+
+   # 以 Bun 管理 JavaScript 套件
    npm i -g bun
+
+   # 安裝 Tauri 所需 Rust 工具鏈
+
+   # 若需開發 Python 層，建議安裝 Python 3.12+
+   # 我們使用 uv 做為 Python 套件管理工具
+   ```
+
+2. 安裝相依套件
+
+   ```bash
    bun i
    ```
 
-3. Run the dev server
+3. 執行桌面應用（開發模式）
 
    ```bash
-   bun dev
+   bunx tauri dev
    ```
 
-That's it. Open [http://localhost:3000](http://localhost:3000) to see the app.
-Use your editor's Prettier integration to format, or run Prettier via your preferred workflow.
+### 產生安裝包
 
-## Learn More
+建立對應作業系統的桌面安裝包／可攜版：
 
-- Next.js docs: [nextjs.org/docs](https://nextjs.org/docs)
-- Tailwind CSS docs: [tailwindcss.com/docs](https://tailwindcss.com/docs)
-- HeroUI docs: [heroui.com/docs](https://heroui.com/docs)
+```bash
+bunx tauri build
+```
+
+建置完成後的產出會位於 `src-tauri/target/` 目錄下。

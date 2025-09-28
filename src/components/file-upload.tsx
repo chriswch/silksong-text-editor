@@ -5,9 +5,12 @@ import { open } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
+import { useLanguageStore } from "@/hooks/use-language";
 import { parseUnityAssetsFile } from "@/utils/tauri-bridge";
 
 export const FileUpload = () => {
+  const { t } = useLanguageStore();
+
   const { setDialogueData } = useDialogueStore();
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -44,10 +47,10 @@ export const FileUpload = () => {
             />
           </div>
           <div>
-            <h2 className="text-xl font-semibold mb-2">Upload Dialogue File</h2>
-            <p className="text-default-500 mb-4">
-              Click to browse and upload your Unity resources.assets file here
-            </p>
+            <h2 className="text-xl font-semibold mb-2">
+              {t("uploadAssetsFile")}
+            </h2>
+            <p className="text-default-500 mb-4">{t("uploadDescription")}</p>
             <label>
               <Button
                 color="primary"
@@ -55,7 +58,7 @@ export const FileUpload = () => {
                 isLoading={isLoading}
                 onPress={handleReadingAssets}
               >
-                {isLoading ? "Processing..." : "Select File"}
+                {isLoading ? t("processing") : t("selectFile")}
               </Button>
             </label>
           </div>

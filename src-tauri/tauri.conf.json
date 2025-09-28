@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "silksong-subtitle-editor",
+  "productName": "Silksong Text Editor",
   "version": "0.1.0",
-  "identifier": "com.chriswch.silksong-subtitle-editor",
+  "identifier": "com.chriswch.silksong-text-editor",
   "build": {
     "frontendDist": "../out",
     "devUrl": "http://localhost:3000",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "silksong-subtitle-editor",
+        "title": "Silksong Text Editor",
         "width": 800,
         "height": 600,
         "resizable": true,
