@@ -47,15 +47,17 @@ export default function TopNavbar() {
             </Tooltip>
           </NavbarItem>
           <NavbarItem>
-            <Button
-              variant="solid"
-              color="primary"
-              startContent={<Icon icon="lucide:download" />}
-              isDisabled={!hasData}
-              onPress={onOpen}
-            >
-              {t("export")}
-            </Button>
+            <Tooltip content={t("download")}>
+              <Button
+                isIconOnly
+                color="primary"
+                variant="solid"
+                isDisabled={!hasData}
+                onPress={onOpen}
+              >
+                <Icon icon="lucide:download" className="text-lg" />
+              </Button>
+            </Tooltip>
           </NavbarItem>
         </NavbarContent>
       </Navbar>

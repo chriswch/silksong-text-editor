@@ -21,7 +21,7 @@ export const zh: Record<string, string> = {
   save: "儲存",
 
   // Export Modal
-  export: "匯出",
+  download: "下載",
   exportDialogue: "匯出文本",
   exportFormat: "匯出格式",
   originalFormat: "原始格式（.assets）",

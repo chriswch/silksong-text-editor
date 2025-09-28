@@ -21,7 +21,7 @@ export const en: Record<string, string> = {
   save: "Save",
 
   // Export Modal
-  export: "Export",
+  download: "Download",
   exportDialogue: "Export Content",
   exportFormat: "Export Format",
   originalFormat: "Original Format (.assets)",
