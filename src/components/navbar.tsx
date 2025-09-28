@@ -4,6 +4,7 @@ import { useDisclosure } from "@heroui/react";
 import { Icon } from "@iconify/react";
 
 import { ExportModal } from "@/components/export-modal";
+import { LanguageSelector } from "@/components/language-selector";
 import { useDialogueStore } from "@/hooks/use-dialogue-store";
 
 const Logo = () => (
@@ -27,6 +28,9 @@ export default function TopNavbar() {
           </div>
         </NavbarBrand>
         <NavbarContent justify="end">
+          <NavbarItem>
+            <LanguageSelector />
+          </NavbarItem>
           <NavbarItem>
             <Button
               variant="solid"
