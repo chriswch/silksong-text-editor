@@ -36,8 +36,17 @@ def decrypt_string(encrypted_string: str) -> str:
         decrypted_bytes_padded = cipher.decrypt(encrypted_bytes)
         decrypted_bytes = unpad(decrypted_bytes_padded, AES.block_size)
         return decrypted_bytes.decode("utf-8")
-    except Exception:
-        return ""
+    except Exception as e:
+        print(
+            json.dumps(
+                {
+                    "error": f"Decryption failed: {e}",
+                    "encrypted_string": encrypted_string,
+                }
+            ),
+            file=sys.stderr,
+        )
+        raise e
 
 
 def encrypt_string(plain_text: str) -> str:
@@ -48,6 +57,10 @@ def encrypt_string(plain_text: str) -> str:
         encrypted = cipher.encrypt(padded)
         return base64.b64encode(encrypted).decode("utf-8")
     except Exception as e:
+        print(
+            json.dumps({"error": f"Encryption failed: {e}", "plain_text": plain_text}),
+            file=sys.stderr,
+        )
         raise RuntimeError(f"Encryption failed: {e}")
 
 

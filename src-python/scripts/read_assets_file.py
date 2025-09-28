@@ -58,10 +58,15 @@ def decrypt_string(encrypted_string: str) -> str:
 
     except Exception as e:
         print(
-            json.dumps({"error": f"An error occurred during decryption: {e}"}),
+            json.dumps(
+                {
+                    "error": f"Decryption failed: {e}",
+                    "encrypted_string": encrypted_string,
+                }
+            ),
             file=sys.stderr,
         )
-        return ""
+        raise e
 
 
 def parse_asset(asset_path: Path) -> DialogueData:
