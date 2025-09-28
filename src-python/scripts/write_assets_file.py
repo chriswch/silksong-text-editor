@@ -2,9 +2,8 @@ import base64
 import json
 import shutil
 import sys
+import re
 import tempfile
-import xml.etree.ElementTree as ET
-from html import unescape
 from pathlib import Path
 from typing import cast
 
@@ -24,6 +23,7 @@ TEXT_ASSET_TYPE = "TextAsset"
 
 # Must match the reader script
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
+ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]+)</entry>')
 
 DialogueEntry = dict[str, dict[str, str]]
 DialogueData = dict[str, DialogueEntry]
@@ -65,20 +65,12 @@ def encrypt_string(plain_text: str) -> str:
 
 
 def apply_scene_updates_to_root(
-    root: ET.Element, scene_updates: dict[str, dict[str, str]]
+    name_to_raw_content: dict[str, str], scene_updates: dict[str, dict[str, str]]
 ):
-    # scene_updates: name -> { originalContent, editedContent? }
-    existing_by_name: dict[str, ET.Element] = {}
-    for entry in root.findall("entry"):
-        name = entry.get("name")
-        if name:
-            existing_by_name[name] = entry
-
     for name, content in scene_updates.items():
         raw_text = content.get("editedContent") or content.get("originalContent") or ""
-        new_text = unescape(raw_text)
-        if name in existing_by_name:
-            existing_by_name[name].text = new_text
+        if name in name_to_raw_content:
+            name_to_raw_content[name] = raw_text
 
 
 def write_assets(asset_path: Path, dialogue_data: DialogueData):
@@ -96,13 +88,23 @@ def write_assets(asset_path: Path, dialogue_data: DialogueData):
 
         # Build/modify XML root from current decrypted script
         xml_string = decrypt_string(data.m_Script)
-        root = ET.fromstring(xml_string)
 
-        apply_scene_updates_to_root(root, dialogue_data[scene_name])
+        raw_entries = ENTRY_PATTERN.findall(xml_string)
+        name_to_raw_content = {name: content for name, content in raw_entries}
+        apply_scene_updates_to_root(name_to_raw_content, dialogue_data[scene_name])
 
-        new_xml = ET.tostring(root, encoding="unicode")
+        new_xml = (
+            "<entries>\n"
+            + "\n".join(
+                f'<entry name="{name}">{content}</entry>'
+                for name, content in name_to_raw_content.items()
+            )
+            + "\n</entries>\n"
+        )
+
         data.m_Script = encrypt_string(new_xml)
         data.save()
+
         changed = True
 
     if not changed:

@@ -1,7 +1,7 @@
 import base64
 import json
+import re
 import sys
-import xml.etree.ElementTree as ET
 from pathlib import Path
 from typing import cast
 
@@ -23,6 +23,7 @@ LANGUAGE = "EN"
 
 # Key must be in bytes, identical to the C# implementation
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
+ENTRY_PATTERN = re.compile(r'<entry name="([^"]+)">([^<]+)</entry>')
 
 DialogueData = dict[str, dict[str, dict[str, str]]]
 
@@ -85,15 +86,18 @@ def parse_asset(asset_path: Path) -> DialogueData:
                 continue
 
             xml_string = decrypt_string(data.m_Script)
-            root = ET.fromstring(xml_string)
+
+            raw_entries = ENTRY_PATTERN.findall(xml_string)
+            name_to_raw_content = {name: content for name, content in raw_entries}
 
             result[data.m_Name] = {}
-            for entry in root.findall("entry"):
-                entry_name = entry.get("name")
+            for entry_name, entry_content in name_to_raw_content.items():
                 if entry_name is None:
                     continue
 
-                result[data.m_Name][entry_name] = {"originalContent": entry.text or ""}
+                result[data.m_Name][entry_name] = {
+                    "originalContent": entry_content or ""
+                }
 
     return result
 
