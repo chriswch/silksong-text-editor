@@ -21,7 +21,6 @@ except Exception as e:
 TARGET_ASSETS_FILE_NAME = "resources.assets"
 TEXT_ASSET_TYPE = "TextAsset"
 
-# Must match the reader script
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
 
 # Must accept empty content

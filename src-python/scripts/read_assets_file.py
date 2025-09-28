@@ -20,8 +20,6 @@ TEXT_ASSET_TYPE = "TextAsset"
 # Language prefix
 LANGUAGE = "EN"
 
-
-# Key must be in bytes, identical to the C# implementation
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
 
 # Must accept empty content
