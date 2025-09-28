@@ -148,7 +148,8 @@ def main() -> int:
 
     dialogue_data: DialogueData
     try:
-        raw = sys.stdin.read()
+        raw_bytes = sys.stdin.buffer.read()
+        raw = raw_bytes.decode("utf-8")
         dialogue_data = json.loads(raw) if raw else {}
     except Exception as e:
         print(json.dumps({"error": f"Invalid JSON on stdin: {e}"}), file=sys.stderr)
