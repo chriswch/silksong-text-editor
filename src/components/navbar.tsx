@@ -1,6 +1,7 @@
 import { Button } from "@heroui/button";
 import { Navbar, NavbarBrand, NavbarContent, NavbarItem } from "@heroui/navbar";
 import { useDisclosure } from "@heroui/react";
+import { Tooltip } from "@heroui/tooltip";
 import { Icon } from "@iconify/react";
 
 import { ExportModal } from "@/components/export-modal";
@@ -15,7 +16,7 @@ const Logo = () => (
 export default function TopNavbar() {
   const { t } = useLanguageStore();
 
-  const { dialogueData } = useDialogueStore();
+  const { saveDialogue, dialogueData } = useDialogueStore();
   const hasData = Object.keys(dialogueData).length > 0;
   const { isOpen, onOpen, onClose } = useDisclosure();
 
@@ -31,6 +32,19 @@ export default function TopNavbar() {
         <NavbarContent justify="end">
           <NavbarItem>
             <LanguageSelector />
+          </NavbarItem>
+          <NavbarItem>
+            <Tooltip content={t("save")}>
+              <Button
+                isIconOnly
+                color="primary"
+                variant="ghost"
+                onPress={saveDialogue}
+                isDisabled={!dialogueData || !hasData}
+              >
+                <Icon icon="lucide:save" className="text-lg" />
+              </Button>
+            </Tooltip>
           </NavbarItem>
           <NavbarItem>
             <Button

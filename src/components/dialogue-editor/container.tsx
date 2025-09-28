@@ -16,7 +16,7 @@ import DialogueTable from "./dialogue-table";
 export default function Container() {
   const { t } = useLanguageStore();
 
-  const { dialogueData, saveDialogue } = useDialogueStore();
+  const { dialogueData } = useDialogueStore();
   const [selectedScene, setSelectedScene] = useState<string>(
     Object.keys(dialogueData)[0],
   );
@@ -53,10 +53,6 @@ export default function Container() {
       </div>
 
       <DialogueTable scene={selectedScene} />
-
-      <Button variant="ghost" color="primary" onPress={saveDialogue}>
-        {t("save")}
-      </Button>
     </div>
   );
 }
