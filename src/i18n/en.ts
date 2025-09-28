@@ -1,6 +1,6 @@
 export const en: Record<string, string> = {
   // App
-  appTitle: "Silksong Content Editor",
+  appTitle: "Silksong Text Editor",
 
   // File Upload
   selectFile: "Select File",
