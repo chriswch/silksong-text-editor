@@ -18,7 +18,7 @@ except Exception as e:
 TEXT_ASSET_TYPE = "TextAsset"
 # TODO: Make this configurable via UI
 # Language prefix
-LANGUAGE = "EN"
+LANGUAGE = "ZH"
 
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
 
