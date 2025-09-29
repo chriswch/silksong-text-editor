@@ -25,7 +25,7 @@ export default function DialogueTable({ scene }: DialogueTableProps) {
 
   return (
     <div className="bg-content1 rounded-medium border border-default-200">
-      <Table aria-label="Dialogue entries table">
+      <Table aria-label="Dialogue entries table" isKeyboardNavigationDisabled>
         <TableHeader>
           <TableColumn width="20%">{t("name")}</TableColumn>
           <TableColumn width="80%">{t("content")}</TableColumn>
