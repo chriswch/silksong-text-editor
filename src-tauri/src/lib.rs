@@ -6,7 +6,9 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .invoke_handler(tauri::generate_handler![
             parse_assets_file,
-            export_assets_file
+            export_assets_file,
+            parse_assets_json_file,
+            export_assets_json_file
         ])
         .setup(|app| {
             if cfg!(debug_assertions) {
@@ -138,5 +140,35 @@ async fn export_assets_file(
     }
 
     // Optionally parse stdout to confirm, but we don't need to return data
+    Ok(())
+}
+
+/// Parse a .assets.json file and return DialogueData-compatible JSON structure
+#[tauri::command]
+async fn parse_assets_json_file(file_path: String) -> Result<serde_json::Value, String> {
+    use std::fs;
+
+    let content =
+        fs::read_to_string(&file_path).map_err(|e| format!("Failed to read JSON file: {}", e))?;
+
+    let json: serde_json::Value =
+        serde_json::from_str(&content).map_err(|e| format!("Invalid JSON: {}", e))?;
+
+    Ok(json)
+}
+
+/// Save DialogueData to a chosen .assets.json file path
+#[tauri::command]
+async fn export_assets_json_file(
+    file_path: String,
+    dialogue_data: serde_json::Value,
+) -> Result<(), String> {
+    use std::fs;
+
+    let data_str = serde_json::to_string_pretty(&dialogue_data)
+        .map_err(|e| format!("Failed to serialize dialogue data: {}", e))?;
+
+    fs::write(&file_path, data_str).map_err(|e| format!("Failed to write JSON file: {}", e))?;
+
     Ok(())
 }
