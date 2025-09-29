@@ -6,7 +6,9 @@ export const zh: Record<string, string> = {
   selectFile: "選擇檔案",
   processing: "處理中...",
   uploadAssetsFile: "上傳檔案",
-  uploadDescription: "上傳 resources.assets 檔案開始編輯",
+  uploadDescription: "上傳 resources.assets 或 .assets.json 檔案開始編輯",
+  uploadOriginalFormat: ".assets",
+  uploadJsonFormat: ".assets.json",
 
   // Search and Filter
   allCategories: "全部分類",
@@ -26,6 +28,8 @@ export const zh: Record<string, string> = {
   exportFormat: "匯出格式",
   originalFormat: "原始格式（.assets）",
   originalFormatDescription: "匯出原始格式",
+  jsonFormat: "JSON 格式（.assets.json）",
+  jsonFormatDescription: "匯出為 JSON 檔案",
   exportFileHint: "這將會將你的編輯寫入選擇的 resources.assets 檔案中。",
   cancel: "取消",
   confirm: "確定",

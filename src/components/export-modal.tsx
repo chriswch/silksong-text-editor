@@ -8,11 +8,15 @@ import {
 } from "@heroui/modal";
 import { Radio, RadioGroup } from "@heroui/radio";
 import { Icon } from "@iconify/react";
-import { open } from "@tauri-apps/plugin-dialog";
+import { open, save } from "@tauri-apps/plugin-dialog";
 import { useState } from "react";
 
 import { useLanguageStore } from "@/hooks/use-language";
-import { exportUnityAssetsFile } from "@/utils/tauri-bridge";
+import { FileFormat } from "@/types/text-resources";
+import {
+  exportAssetsJsonFile,
+  exportUnityAssetsFile,
+} from "@/utils/tauri-bridge";
 
 import { useDialogueStore } from "../hooks/use-dialogue-store";
 
@@ -25,40 +29,49 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
   const { t } = useLanguageStore();
 
   const { dialogueData } = useDialogueStore();
-  const [exportOption, setExportOption] = useState("new");
+  const [exportOption, setExportOption] = useState<FileFormat>(
+    FileFormat.ASSETS,
+  );
   const [isExporting, setIsExporting] = useState(false);
   const [targetPath, setTargetPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleChooseFile = async () => {
     setError(null);
-    const selected = await open({
-      multiple: false,
-      directory: false,
-      filters: [
-        {
-          name: "Unity resources.assets",
-          extensions: ["assets"],
-        },
-      ],
-    });
-    if (!selected) return;
-    if (Array.isArray(selected)) {
-      setTargetPath(selected[0] ?? null);
+
+    let path: string | null = null;
+    if (exportOption === FileFormat.ASSETS) {
+      path = await open({
+        multiple: false,
+        directory: false,
+        filters: [{ name: "Unity resources.assets", extensions: ["assets"] }],
+      });
     } else {
-      setTargetPath(selected);
+      path = await save({
+        filters: [
+          { name: "Unity resources.assets.json", extensions: ["json"] },
+        ],
+      });
     }
+    if (!path) return;
+    setTargetPath(path);
   };
 
   const handleExport = async () => {
     setError(null);
+
     if (!targetPath) {
-      setError("Please select a resources.assets file first.");
+      setError("Please select a file first.");
       return;
     }
+
     setIsExporting(true);
     try {
-      await exportUnityAssetsFile(targetPath, dialogueData);
+      if (exportOption === FileFormat.ASSETS) {
+        await exportUnityAssetsFile(targetPath, dialogueData);
+      } else {
+        await exportAssetsJsonFile(targetPath, dialogueData);
+      }
       onClose();
     } catch (e) {
       setError(`Failed to export. ${e}`);
@@ -80,10 +93,21 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
             </ModalHeader>
             <ModalBody>
               <p className="text-default-500 mb-4">{t("exportFormat")}</p>
-
-              <RadioGroup value={exportOption} onValueChange={setExportOption}>
-                <Radio value="new" description={t("originalFormatDescription")}>
+              <RadioGroup
+                value={exportOption}
+                onValueChange={(key) => setExportOption(key as FileFormat)}
+              >
+                <Radio
+                  value={FileFormat.ASSETS}
+                  description={t("originalFormatDescription")}
+                >
                   {t("originalFormat")}
+                </Radio>
+                <Radio
+                  value={FileFormat.JSON}
+                  description={t("jsonFormatDescription")}
+                >
+                  {t("jsonFormat")}
                 </Radio>
               </RadioGroup>
 
@@ -110,15 +134,17 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                 )}
               </div>
 
-              <div className="mt-6 p-3 bg-warning-50 rounded-medium flex items-start gap-2">
-                <Icon
-                  icon="lucide:alert-triangle"
-                  className="text-warning mt-0.5"
-                />
-                <div className="text-small text-warning-700">
-                  {t("exportFileHint")}
+              {exportOption === FileFormat.ASSETS && (
+                <div className="mt-6 p-3 bg-warning-50 rounded-medium flex items-start gap-2">
+                  <Icon
+                    icon="lucide:alert-triangle"
+                    className="text-warning mt-0.5"
+                  />
+                  <div className="text-small text-warning-700">
+                    {t("exportFileHint")}
+                  </div>
                 </div>
-              </div>
+              )}
             </ModalBody>
             <ModalFooter>
               <Button color="default" variant="light" onPress={onClose}>
