@@ -6,7 +6,10 @@ export const en: Record<string, string> = {
   selectFile: "Select File",
   processing: "Processing...",
   uploadAssetsFile: "Upload The File",
-  uploadDescription: "Upload a resources.assets file to begin editing",
+  uploadDescription:
+    "Upload a resources.assets or .assets.json file to begin editing",
+  uploadOriginalFormat: ".assets",
+  uploadJsonFormat: ".assets.json",
 
   // Search and Filter
   allCategories: "All Categories",
@@ -26,6 +29,8 @@ export const en: Record<string, string> = {
   exportFormat: "Export Format",
   originalFormat: "Original Format (.assets)",
   originalFormatDescription: "Export original format",
+  jsonFormat: "JSON Format (.assets.json)",
+  jsonFormatDescription: "Export as JSON file",
   exportFileHint:
     "This will write your edits into the selected resources.assets file.",
   confirm: "Confirm",
