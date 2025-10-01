@@ -93,10 +93,3 @@ jobs:
         with:
           name: ${{ matrix.os }}-installers
           path: src-tauri/target/release/bundle/**
-
-      # 9. Publish installers
-      - name: Upload to GitHub Release
-        uses: softprops/action-gh-release@v2
-        if: github.ref_type == 'tag'
-        with:
-          files: src-tauri/target/release/bundle/**
