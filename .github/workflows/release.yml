@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*.*.*" # Triggers on tags like v0.3.1, v1.0.0, etc.
+
+permissions:
+  contents: write # Required to create releases
+  actions: read # Required to download artifacts
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      # 1. Checkout the tagged commit
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Fetch all history for all branches and tags
+
+      # 2. Find the build workflow run for this commit
+      - name: Find build workflow run
+        id: find-run
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          # Get the commit SHA for this tag
+          COMMIT_SHA="${{ github.sha }}"
+          echo "Looking for build workflow run for commit: $COMMIT_SHA"
+
+          # Find the most recent successful build workflow run for this commit
+          RUN_ID=$(gh run list \
+            --workflow=build.yml \
+            --commit=$COMMIT_SHA \
+            --status=success \
+            --limit=1 \
+            --json databaseId \
+            --jq '.[0].databaseId')
+
+          if [ -z "$RUN_ID" ]; then
+            echo "Error: No successful build workflow run found for commit $COMMIT_SHA"
+            echo "Please ensure the build workflow has completed successfully for this commit."
+            exit 1
+          fi
+
+          echo "Found build run ID: $RUN_ID"
+          echo "run-id=$RUN_ID" >> $GITHUB_OUTPUT
+
+      # 3. Download artifacts from the build workflow run
+      - name: Download build artifacts
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          echo "Downloading artifacts from run ${{ steps.find-run.outputs.run-id }}"
+          gh run download ${{ steps.find-run.outputs.run-id }} --dir ./artifacts
+
+          # List downloaded artifacts for verification
+          echo "Downloaded artifacts:"
+          ls -R ./artifacts
+
+      # 4. Create GitHub Release
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: ./artifacts/**/*
+          generate_release_notes: true
+          draft: false
+          prerelease: false
+          fail_on_unmatched_files: true
