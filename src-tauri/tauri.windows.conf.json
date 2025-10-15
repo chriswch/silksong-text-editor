@@ -1,9 +1,9 @@
 {
-    "bundle": {
-      "resources": [
-            "../python-runtime/windows-x64",
-            "../src-python/scripts/read_assets_file.py",
-            "../src-python/scripts/write_assets_file.py"
-        ]
+  "bundle": {
+    "resources": {
+      "../python-runtime/windows-x64": "python-runtime",
+      "../src-python/scripts/read_assets_file.py": "src-python/scripts/read_assets_file.py",
+      "../src-python/scripts/write_assets_file.py": "src-python/scripts/write_assets_file.py"
     }
+  }
 }
