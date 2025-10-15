@@ -25,27 +25,37 @@ pub fn run() {
 }
 
 /// Determine python path as per dev vs prod
-fn get_python_path() -> PathBuf {
-    // 1. Prefer runtime override if user sets env when running the app
-    if let Ok(path) = env::var("PYTHON_RUNTIME_PATH") {
-        return PathBuf::from(path);
+fn get_python_path(app: tauri::AppHandle) -> Result<PathBuf, String> {
+    use tauri::Manager;
+
+    if let Ok(mut bundled_path) = app
+        .path()
+        .resolve("python-runtime", tauri::path::BaseDirectory::Resource)
+    {
+        if cfg!(target_os = "windows") {
+            bundled_path.push("python.exe");
+        } else {
+            bundled_path.push("bin/python");
+        }
+        // Normalize Windows extended-length paths (\\?\) for compatibility with Command::new()
+        return Ok(bundled_path);
     }
 
-    // 2. Fall back to baked-in value from build.rs (only exists in CI builds)
-    if let Some(baked) = option_env!("PYTHON_RUNTIME_PATH") {
-        return PathBuf::from(baked);
+    // Dev fallback: local venv
+    if let Ok(mut venv_path) = app.path().resolve(
+        env!("CARGO_MANIFEST_DIR"),
+        tauri::path::BaseDirectory::Resource,
+    ) {
+        if cfg!(target_os = "windows") {
+            venv_path.push("Scripts/python.exe");
+        } else {
+            venv_path.push("bin/python");
+        }
+        // Normalize Windows extended-length paths (\\?\) for compatibility with Command::new()
+        return Ok(venv_path);
     }
 
-    // 3. Dev fallback: local venv
-    let mut path = PathBuf::from(env!("CARGO_MANIFEST_DIR"));
-    path.pop(); // go up to project root if necessary
-    path.push("src-python/.venv");
-    if cfg!(target_os = "windows") {
-        path.push("Scripts/python.exe");
-    } else {
-        path.push("bin/python");
-    }
-    path
+    Err("python not found".into())
 }
 
 #[tauri::command]
@@ -57,7 +67,7 @@ async fn parse_assets_file(
     use tauri::Manager;
 
     let script_path = match app.path().resolve(
-        "../src-python/scripts/read_assets_file.py",
+        "src-python/scripts/read_assets_file.py",
         tauri::path::BaseDirectory::Resource,
     ) {
         Ok(p) => p,
@@ -66,8 +76,14 @@ async fn parse_assets_file(
         }
     };
 
-    let python_bin = get_python_path();
-    let output = match Command::new(python_bin)
+    let python_bin = match get_python_path(app) {
+        Ok(p) => p,
+        Err(_) => {
+            return Err("python not found".into());
+        }
+    };
+
+    let output = match Command::new(&python_bin)
         .arg(&script_path)
         .arg(&file_path)
         .output()
@@ -107,7 +123,12 @@ async fn export_assets_file(
         }
     };
 
-    let python_bin = get_python_path();
+    let python_bin = get_python_path(app);
+    if python_bin.is_err() {
+        return Err("python not found".into());
+    }
+
+    let python_bin = python_bin.unwrap();
     let mut child = match Command::new(python_bin)
         .arg(&script_path)
         .arg(&file_path)
