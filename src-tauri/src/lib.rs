@@ -62,6 +62,7 @@ fn get_python_path(app: tauri::AppHandle) -> Result<PathBuf, String> {
 async fn parse_assets_file(
     app: tauri::AppHandle,
     file_path: String,
+    language: String,
 ) -> Result<serde_json::Value, String> {
     use std::process::Command;
     use tauri::Manager;
@@ -86,6 +87,8 @@ async fn parse_assets_file(
     let output = match Command::new(&python_bin)
         .arg(&script_path)
         .arg(&file_path)
+        .arg("--language")
+        .arg(&language)
         .output()
     {
         Ok(o) => o,
