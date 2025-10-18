@@ -13,6 +13,8 @@ import {
   parseUnityAssetsFile,
 } from "@/utils/tauri-bridge";
 
+type AssetsLanguage = "EN" | "ZH";
+
 export const FileUpload = () => {
   const { t } = useLanguageStore();
 
@@ -22,6 +24,7 @@ export const FileUpload = () => {
   const [uploadFormat, setUploadFormat] = useState<FileFormat>(
     FileFormat.ASSETS,
   );
+  const [assetsLanguage, setAssetsLanguage] = useState<AssetsLanguage>("EN");
 
   const handleReadingAssets = async () => {
     setIsLoading(true);
@@ -42,7 +45,7 @@ export const FileUpload = () => {
 
       const parsedData =
         uploadFormat === FileFormat.ASSETS
-          ? await parseUnityAssetsFile(path)
+          ? await parseUnityAssetsFile(path, assetsLanguage)
           : await parseAssetsJsonFile(path);
       setDialogueData(parsedData);
     } catch (err) {
@@ -66,32 +69,65 @@ export const FileUpload = () => {
             <h2 className="text-xl font-semibold mb-2">
               {t("uploadAssetsFile")}
             </h2>
-            <div className="flex items-center justify-center gap-4">
-              <Tabs
-                aria-label="Options"
-                variant="bordered"
-                selectedKey={uploadFormat}
-                onSelectionChange={(key) => setUploadFormat(key as FileFormat)}
-              >
-                <Tab
-                  key={FileFormat.ASSETS}
-                  title={
-                    <div className="flex items-center space-x-2">
-                      <Icon icon="lucide:file-text" />
-                      <span>{t("uploadOriginalFormat")}</span>
-                    </div>
+            <div className="flex flex-col items-center justify-center gap-4">
+              <div className="flex items-center justify-center gap-4">
+                <Tabs
+                  aria-label="File Format"
+                  variant="bordered"
+                  selectedKey={uploadFormat}
+                  onSelectionChange={(key) =>
+                    setUploadFormat(key as FileFormat)
                   }
-                />
-                <Tab
-                  key={FileFormat.JSON}
-                  title={
-                    <div className="flex items-center space-x-2">
-                      <Icon icon="lucide:braces" />
-                      <span>{t("uploadJsonFormat")}</span>
-                    </div>
-                  }
-                />
-              </Tabs>
+                >
+                  <Tab
+                    key={FileFormat.ASSETS}
+                    title={
+                      <div className="flex items-center space-x-2">
+                        <Icon icon="lucide:file-text" />
+                        <span>{t("uploadOriginalFormat")}</span>
+                      </div>
+                    }
+                  />
+                  <Tab
+                    key={FileFormat.JSON}
+                    title={
+                      <div className="flex items-center space-x-2">
+                        <Icon icon="lucide:braces" />
+                        <span>{t("uploadJsonFormat")}</span>
+                      </div>
+                    }
+                  />
+                </Tabs>
+                {uploadFormat === FileFormat.ASSETS && (
+                  <Tabs
+                    aria-label="Assets Language"
+                    variant="bordered"
+                    selectedKey={assetsLanguage}
+                    onSelectionChange={(key) =>
+                      setAssetsLanguage(key as AssetsLanguage)
+                    }
+                  >
+                    <Tab
+                      key="EN"
+                      title={
+                        <div className="flex items-center space-x-2">
+                          <Icon icon="lucide:languages" />
+                          <span>{t("languageEN")}</span>
+                        </div>
+                      }
+                    />
+                    <Tab
+                      key="ZH"
+                      title={
+                        <div className="flex items-center space-x-2">
+                          <Icon icon="lucide:languages" />
+                          <span>{t("languageZH")}</span>
+                        </div>
+                      }
+                    />
+                  </Tabs>
+                )}
+              </div>
               <Button
                 color="primary"
                 startContent={!isLoading && <Icon icon="lucide:file-text" />}

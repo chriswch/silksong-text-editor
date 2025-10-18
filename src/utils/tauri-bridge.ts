@@ -4,9 +4,11 @@ import type { DialogueData } from "@/types/dialogue";
 
 export async function parseUnityAssetsFile(
   filePath: string,
+  language: string,
 ): Promise<DialogueData> {
   const result = await invoke<DialogueData>("parse_assets_file", {
     filePath,
+    language,
   });
   return result;
 }

@@ -10,6 +10,9 @@ export const en: Record<string, string> = {
     "Upload a resources.assets or .assets.json file to begin editing",
   uploadOriginalFormat: ".assets",
   uploadJsonFormat: ".assets.json",
+  selectLanguage: "Select Language",
+  languageEN: "English",
+  languageZH: "Chinese",
 
   // Search and Filter
   allCategories: "All Categories",

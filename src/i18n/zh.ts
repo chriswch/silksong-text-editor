@@ -9,6 +9,9 @@ export const zh: Record<string, string> = {
   uploadDescription: "上傳 resources.assets 或 .assets.json 檔案開始編輯",
   uploadOriginalFormat: ".assets",
   uploadJsonFormat: ".assets.json",
+  selectLanguage: "選擇語言",
+  languageEN: "英文",
+  languageZH: "中文",
 
   // Search and Filter
   allCategories: "全部分類",
