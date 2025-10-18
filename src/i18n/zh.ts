@@ -34,6 +34,8 @@ export const zh: Record<string, string> = {
   jsonFormat: "JSON 格式（.assets.json）",
   jsonFormatDescription: "匯出為 JSON 檔案",
   exportFileHint: "這將會將你的編輯寫入選擇的 resources.assets 檔案中。",
+  exportLanguage: "目標覆寫語言",
+  exporting: "匯出中...",
   cancel: "取消",
   confirm: "確定",
 };

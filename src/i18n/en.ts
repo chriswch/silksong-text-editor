@@ -36,6 +36,8 @@ export const en: Record<string, string> = {
   jsonFormatDescription: "Export as JSON file",
   exportFileHint:
     "This will write your edits into the selected resources.assets file.",
+  exportLanguage: "Target Language to Override",
+  exporting: "Exporting...",
   confirm: "Confirm",
   cancel: "Cancel",
 };

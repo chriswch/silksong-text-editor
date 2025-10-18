@@ -16,10 +16,12 @@ export async function parseUnityAssetsFile(
 export async function exportUnityAssetsFile(
   filePath: string,
   dialogueData: DialogueData,
+  language: string,
 ): Promise<void> {
   await invoke("export_assets_file", {
     filePath,
     dialogueData,
+    language,
   });
 }
 
