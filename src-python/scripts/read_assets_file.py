@@ -1,3 +1,5 @@
+import argparse
+from argparse import Namespace
 import base64
 import json
 import re
@@ -16,9 +18,6 @@ except Exception as e:
     sys.exit(1)
 
 TEXT_ASSET_TYPE = "TextAsset"
-# TODO: Make this configurable via UI
-# Language prefix
-LANGUAGE = "ZH"
 
 KEY = b"UKu52ePUBwetZ9wNX88o54dnfKRu0T1l"
 
@@ -70,7 +69,7 @@ def decrypt_string(encrypted_string: str) -> str:
         raise e
 
 
-def parse_asset(asset_path: Path) -> DialogueData:
+def parse_asset(asset_path: Path, language: str) -> DialogueData:
     env = UnityPy.load(str(asset_path))
 
     result: DialogueData = {}
@@ -82,7 +81,7 @@ def parse_asset(asset_path: Path) -> DialogueData:
         if obj.type.name == TEXT_ASSET_TYPE:
             data: TextAsset = cast(TextAsset, obj.read())
 
-            if not data.m_Name.startswith(f"{LANGUAGE}_"):
+            if not data.m_Name.startswith(f"{language}_"):
                 continue
 
             xml_string = decrypt_string(data.m_Script)
@@ -103,20 +102,26 @@ def parse_asset(asset_path: Path) -> DialogueData:
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print(
-            json.dumps({"error": "Usage: parse_unity_asset.py <asset_path>"}),
-            file=sys.stderr,
-        )
-        return 2
+    parser = argparse.ArgumentParser(description="Parse Unity assets file")
 
-    asset_path = Path(sys.argv[1])
+    _ = parser.add_argument("asset_path", type=str, help="Path to the assets file")
+    _ = parser.add_argument(
+        "--language",
+        type=str,
+        choices=["EN", "ZH"],
+        required=True,
+        help="Language prefix to filter",
+    )
+
+    args = parser.parse_args()
+
+    asset_path = Path(args.asset_path)
     if not asset_path.exists():
         print(json.dumps({"error": f"Asset not found: {asset_path}"}), file=sys.stderr)
         return 3
 
     try:
-        result = parse_asset(asset_path)
+        result = parse_asset(asset_path, args.language)
         print(json.dumps(result))
         return 0
     except Exception as e:
