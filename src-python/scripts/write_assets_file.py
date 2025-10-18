@@ -1,3 +1,4 @@
+import argparse
 import base64
 import json
 import shutil
@@ -63,6 +64,51 @@ def encrypt_string(plain_text: str) -> str:
             file=sys.stderr,
         )
         raise RuntimeError(f"Encryption failed: {e}")
+
+
+def detect_source_language(dialogue_data: DialogueData) -> str:
+    """
+    Detect the source language from DialogueData keys.
+    Returns "EN" or "ZH" based on the prefix of the first scene key.
+    Defaults to "EN" if no keys or unrecognized prefix.
+    """
+    if not dialogue_data:
+        raise RuntimeError("No dialogue data provided")
+
+    first_key = next(iter(dialogue_data.keys()))
+    if first_key.startswith("EN_"):
+        return "EN"
+    elif first_key.startswith("ZH_"):
+        return "ZH"
+    else:
+        raise RuntimeError("Unrecognized language prefix")
+
+
+def transform_dialogue_data_keys(
+    dialogue_data: DialogueData, target_language: str
+) -> DialogueData:
+    """
+    Transform DialogueData keys from source language to target language.
+    Only transforms if source != target and pattern matches (EN↔ZH).
+    Returns a new dictionary with transformed keys.
+    """
+    source_language = detect_source_language(dialogue_data)
+
+    # No transformation needed if languages match
+    if source_language == target_language:
+        return dialogue_data
+
+    # Only transform for EN↔ZH pattern
+    if not (
+        (source_language == "EN" and target_language == "ZH")
+        or (source_language == "ZH" and target_language == "EN")
+    ):
+        return dialogue_data
+
+    return {
+        key.replace(f"{source_language}_", f"{target_language}_", 1): value
+        for key, value in dialogue_data.items()
+    }
 
 
 def apply_scene_updates_to_root(
@@ -135,14 +181,19 @@ def write_assets(asset_path: Path, dialogue_data: DialogueData):
 
 
 def main() -> int:
-    if len(sys.argv) < 2:
-        print(
-            json.dumps({"error": "Usage: write_assets_file.py <asset_path>"}),
-            file=sys.stderr,
-        )
-        return 2
+    parser = argparse.ArgumentParser(description="Write Unity assets file")
+    _ = parser.add_argument("asset_path", type=str, help="Path to the assets file")
+    _ = parser.add_argument(
+        "--language",
+        type=str,
+        required=True,
+        choices=["EN", "ZH"],
+        help="Target language prefix for export",
+    )
 
-    asset_path = Path(sys.argv[1])
+    args = parser.parse_args()
+
+    asset_path = Path(args.asset_path)
     if not asset_path.exists():
         print(json.dumps({"error": f"Asset not found: {asset_path}"}), file=sys.stderr)
         return 3
@@ -156,8 +207,11 @@ def main() -> int:
         print(json.dumps({"error": f"Invalid JSON on stdin: {e}"}), file=sys.stderr)
         return 4
 
+    # Pre-process dialogue data: transform keys if source and target languages differ
+    transformed_data = transform_dialogue_data_keys(dialogue_data, args.language)
+
     try:
-        result = write_assets(asset_path, dialogue_data)
+        result = write_assets(asset_path, transformed_data)
         print(json.dumps(result))
         return 0
     except Exception as e:
