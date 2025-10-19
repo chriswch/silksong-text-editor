@@ -146,7 +146,7 @@ async fn export_assets_file(
     use tokio::process::Command;
 
     let script_path = match app.path().resolve(
-        "../src-python/scripts/write_assets_file.py",
+        "src-python/scripts/write_assets_file.py",
         tauri::path::BaseDirectory::Resource,
     ) {
         Ok(p) => p,
