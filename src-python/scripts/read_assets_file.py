@@ -1,7 +1,7 @@
 import argparse
-from argparse import Namespace
 import base64
 import json
+import logging
 import re
 import sys
 from pathlib import Path
@@ -11,10 +11,19 @@ from Crypto.Cipher import AES
 from Crypto.Util.Padding import unpad
 from UnityPy.classes import TextAsset
 
+# Configure logging to stderr only (stdout reserved for result JSON)
+logging.basicConfig(
+    level=logging.INFO,
+    format="[%(levelname)s] %(message)s",
+    stream=sys.stderr,
+    force=True,
+)
+logger = logging.getLogger(__name__)
+
 try:
     import UnityPy
 except Exception as e:
-    print(json.dumps({"error": f"Failed to import UnityPy: {e}"}), file=sys.stderr)
+    logger.error(f"Failed to import UnityPy: {e}")
     sys.exit(1)
 
 TEXT_ASSET_TYPE = "TextAsset"
@@ -57,15 +66,7 @@ def decrypt_string(encrypted_string: str) -> str:
         return decrypted_bytes.decode("utf-8")
 
     except Exception as e:
-        print(
-            json.dumps(
-                {
-                    "error": f"Decryption failed: {e}",
-                    "encrypted_string": encrypted_string,
-                }
-            ),
-            file=sys.stderr,
-        )
+        logger.error(f"Decryption failed: {e}, encrypted_string: {encrypted_string}")
         raise e
 
 
@@ -112,20 +113,33 @@ def main() -> int:
         required=True,
         help="Language prefix to filter",
     )
+    _ = parser.add_argument(
+        "--debug",
+        action="store_true",
+        help="Enable debug logging",
+    )
 
     args = parser.parse_args()
 
+    # Adjust log level based on debug flag
+    if args.debug:
+        logger.setLevel(logging.DEBUG)
+        logger.debug("Debug mode enabled")
+
     asset_path = Path(args.asset_path)
     if not asset_path.exists():
-        print(json.dumps({"error": f"Asset not found: {asset_path}"}), file=sys.stderr)
+        logger.error(f"Asset not found: {asset_path}")
         return 3
+
+    logger.debug(f"Target language: {args.language}")
 
     try:
         result = parse_asset(asset_path, args.language)
+        # Output result ONLY to stdout - this is the contract
         print(json.dumps(result))
         return 0
     except Exception as e:
-        print(json.dumps({"error": f"Failed to parse asset: {e}"}), file=sys.stderr)
+        logger.exception("Failed to parse asset")
         return 1
 
 
