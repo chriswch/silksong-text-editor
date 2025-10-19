@@ -25,6 +25,8 @@ interface ExportModalProps {
   onClose: () => void;
 }
 
+type ExportLanguage = "EN" | "ZH";
+
 export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
   const { t } = useLanguageStore();
 
@@ -32,6 +34,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
   const [exportOption, setExportOption] = useState<FileFormat>(
     FileFormat.ASSETS,
   );
+  const [exportLanguage, setExportLanguage] = useState<ExportLanguage>("EN");
   const [isExporting, setIsExporting] = useState(false);
   const [targetPath, setTargetPath] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,7 +71,7 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
     setIsExporting(true);
     try {
       if (exportOption === FileFormat.ASSETS) {
-        await exportUnityAssetsFile(targetPath, dialogueData);
+        await exportUnityAssetsFile(targetPath, dialogueData, exportLanguage);
       } else {
         await exportAssetsJsonFile(targetPath, dialogueData);
       }
@@ -110,6 +113,22 @@ export const ExportModal = ({ isOpen, onClose }: ExportModalProps) => {
                   {t("jsonFormat")}
                 </Radio>
               </RadioGroup>
+
+              {exportOption === FileFormat.ASSETS && (
+                <div className="mt-4">
+                  <p className="text-default-500 mb-2">{t("exportLanguage")}</p>
+                  <RadioGroup
+                    value={exportLanguage}
+                    onValueChange={(key) =>
+                      setExportLanguage(key as ExportLanguage)
+                    }
+                    orientation="horizontal"
+                  >
+                    <Radio value="EN">{t("languageEN")}</Radio>
+                    <Radio value="ZH">{t("languageZH")}</Radio>
+                  </RadioGroup>
+                </div>
+              )}
 
               <div className="mt-4 flex flex-col gap-2">
                 <div className="flex items-center gap-3">

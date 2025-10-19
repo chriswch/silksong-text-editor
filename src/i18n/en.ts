@@ -10,6 +10,9 @@ export const en: Record<string, string> = {
     "Upload a resources.assets or .assets.json file to begin editing",
   uploadOriginalFormat: ".assets",
   uploadJsonFormat: ".assets.json",
+  selectLanguage: "Select Language",
+  languageEN: "English",
+  languageZH: "Chinese",
 
   // Search and Filter
   allCategories: "All Categories",
@@ -33,6 +36,8 @@ export const en: Record<string, string> = {
   jsonFormatDescription: "Export as JSON file",
   exportFileHint:
     "This will write your edits into the selected resources.assets file.",
+  exportLanguage: "Target Language to Override",
+  exporting: "Exporting...",
   confirm: "Confirm",
   cancel: "Cancel",
 };
